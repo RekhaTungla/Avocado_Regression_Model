@@ -1,0 +1,251 @@
+Dataset link : https://raw.githubusercontent.com/insaid2018/Term-2/master/Projects/avocado.csv
+
+						
+						
+					Column Name	Description
+					Id	Unique identity of each observation.
+					Date	The date of the observation.
+					AveragePrice	The average price of a single avocado.
+					Total Volume	Total number of avocados sold.
+					4046	Total number of Small/Medium avocados with PLU 4046 sold. 
+					4225	Total number of Large avocados with PLU 4225 sold.
+					4770	Total number of Extra Large avocados with PLU 4770 sold.
+					Total Bags	Total number of bags sold.
+					Small Bags	Total number of small bags sold.
+					Large Bags	Total number of large bags sold.
+					XLarge Bags	Total number of extra-large bags sold.
+					type	Type of an avocado (conventional or organic).
+					year	The year of observation.
+					Region	The city or region of the observation.
+						
+						
+						
+			
+Observation:
+
+Minimum AveragePrice =0.44
+
+Maximum AveragePrice =3.25
+
+Average Total Number of Avacados sold 107376 , Minimum = 84 and Maximum = 62505646
+
+Average Total Number of PLU-4046(Small/Medium avocados) sold 8645 , Minimum = 0 and Maximum = 22743616
+
+Average Total Number of PLU-4225(Large avocados) sold 29061 , Minimum = 0 and Maximum = 20470572
+
+Average Total Number of PLU-4770(Extra Large avocados) sold 185 , Minimum = 0 and Maximum = 2546439
+
+Average Total Number of Bags sold 39743, Minimum = 0 and Maximum = 19373134
+
+Average Total Number of PLU-4046 Small Bags sold 26362, Minimum = 0 and Maximum = 13384586
+
+Average Total Number of 4225 Large Bags sold 2647, Minimum = 0 and Maximum = 5719096 , as multiple outliers present in this column.
+
+Total Number of PLU-4046 Small Bags sold 0, Minimum = 0 and Maximum = 551693
+
+Avocados sales are minimum in the year 2015 and maximum in the year 2018
+
+Difference between mean and 50% value in some of the columns which used to get fix for better prediction.
+
+STD and mean are very close to each other in some of the columns.
+
+Obervations from Pre-Profiling:
+
+1.High cardinality
+
+Categorical feature "Date" has a high cardinality : 169 distinct values
+
+Categorical feature "region" has a high cardinality : 54 distinct values
+
+2.High correlation
+
+Total Volume is highly correlated with 4046, 4225, 4770
+
+4225 is highly correlated with Total Volume, 4046 , 4770
+
+Total Bags is highly correlated with Small Bags, Large Bags
+
+3.Uniform
+
+Date and region are uniformly distributed
+
+4.Zeros
+
+4046 has 242 (1.3%) zeros
+
+4770 has 5497 (30.1%) zeros
+
+Large Bags has 2370 (13.0%) zeros
+
+XLarge Bags has 12048 (66.0%) zeros
+#Checking null values in dataset with HeatMap in 
+sns.heatmap(avocado_df.isnull(),cmap="YlGnBu")
+avocado_df.describe(include='all') #Statistical summary of data frame for Numerical and Categorical features.
+
+5.3 Feature Engineering.
+Feature engineering has two goals primarily:
+
+Preparing the proper input dataset, compatible with the machine learning algorithm requirements
+
+Improving the performance of machine learning models
+
+Feature Engineering on the Date Feature in pre-processing so we can be able to use the day and the month columns in building our machine learning model later.
+
+Earlier in info we have seen that Date is Object type not the date type. We have to change its type to date type.
+avocado_df['Date']=pd.to_datetime(avocado_df['Date']) #converts the given argument to datetime
+avocado_df['Month']=avocado_df['Date'].apply(lambda x:x.month) #Apply a function along an axis of the DataFrame.
+avocado_df['Day']=avocado_df['Date'].apply(lambda x:x.day)
+
+Organic vs Conventional : The main difference between organic and conventional food products are the chemicals involved during production and processing. The interest in organic food products has been rising steadily over the recent years with new health super fruits emerging. Let's see if this is also the case with our dataset.
+
+Q.1 Which type of Avocados are more in demand (Conventional or Organic)?
+Type=avocado_df.groupby('type')['Total Volume'].agg('sum')
+values=[Type['conventional'],Type['organic']]
+labels=['conventional','organic']
+trace=go.Pie(labels=labels,values=values)
+py.iplot([trace])
+Just over 2.81 % of our dataset is organic. So looks like Conventional is in more demand. Now, let's look at the average price distribution.
+
+Q.2 In which range Average price lies, what is distribution look like?
+
+
+count   18249.00000
+mean        1.40598
+std         0.40268
+min         0.44000
+25%         1.10000
+50%         1.37000
+75%         1.66000
+max         3.25000
+Name: AveragePrice, dtype: float64
+
+
+Average Price distribution is almost postively left skewed.Means mean, median and mode of the distribution are positive.
+Probability of any outcome is different hence its due to unequal distribution of Prices.And in positive distribution, the chances of profits are more than the loss.
+Average Price distribution shows that for most cases price of avocado is between 1.1, 1.5 which is in vertical red lines corresponding (from left to right) to the 25th, 50th, 75th percentiles.
+"Season" extracted from the 'Month' column, so that we can divide the 12 months into 4 seasons: Summer, Winter, Autumn and Spring. For that we are defining an user defined function.
+
+Q.3 How Average price is distributed over the months for Conventional and Organic Types?
+
+Avocados price is cyclical clear hike between months 8 – 10 for both Conventional and Organic typeof Avocados prices.
+
+Price peaks per Month: It looks that most price peaks occur for both conventional and organic avocados between the months of September and October.
+
+Conventional avocados: Based on price changes throughout time we can see that they are less expensive.
+
+Organic avocados: Based on the price changes throughout time we can see that they are more expensive.
+
+Prices of Avacados are higher in Autumn season for both Conventional and Organic type.
+
+Now lets plot Average price distribution based on top 5 region.
+Looks like these region are where price is very high
+
+HartfordSpringfield
+
+SanFrancisco
+
+NewYork
+
+Philadelphia
+
+Sacramento
+Based on the list above, Hamilton, New York City,San Francisco, California, and Washington D.C. (top most expensive cities of US) are clearly outliers in terms of avocado prices compared with other general living costs of each city.
+
+Texas, California and Arizona where the geographical proximity to Mexico, the highest avaocado production country, is higher than the other areas, ranked the lowest, which confirms the hypothesis. https://en.wikipedia.org/wiki/List_of_countries_by_avocado_production.
+
+Q.5 What are TOP 5 regions where Average consumption is very high?
+
+Looks like these region are where Consumption is very high.
+West
+California
+SouthCentral
+Northeast
+Southeast
+Q.6 In which year and for which region was the Average price the highest?Year 2017 in SanFranciso region have a good demand and high prices.Demand is especially high in the summer.
+Californian avocado prices are good. In recent years, demand in California has increased sharply and traders in California have profited from it.
+Regional Analysis:
+It is surprising that Hartford-Springfield was the most expensive city as we checked on top already. Also, San Francisco is geographically not so far from the production regions, but it ranked very high, even higher than New York and other Northeastern cities.
+As we know there is so many factors that affect avocados price especially in US. We must check the supplier of the avocado (maybe its imported from other country? or from US farm). Climate also giving a significance role in avocados price.
+Hypothesis: Transportation costs from main production areas/regions (Mexico, CA etc.) is the major factor to drive up prices? I did a little research on the production trends of avaocado - see below.
+[Research Result]
+In 2017, world production of avocados was 5.9 million tonnes, led by Mexico with 34% (2.01 million tonnes) of the total (table). In the U.S., California is the major producer, accounting for 93 percent of U.S. avocado output. However, the most of US consumption rely on the imports from Mexico - 89% of the imports.
+Per capital consumption of avocados in the U.S. has tripled since 2001 to 8 pounds per person in 2018. This led to the increase of the imports from Mexico and South America.¶
+
+Average prices were highest in year 2017 for both Conventional and Organic types as 1.75 Doller and 1.30 Doller .
+Average prices goes down in year 2018 for both type as 1.50 Doller and 1.5 Doller.
+A major storyline of 2017 was the competition in China between the three nations to which AQSIQ has granted market access for avocados: Mexico, Chile, and Peru.
+Q.7 How price is distributed over the date column?
+Now lets do some plots!! I'll start by plotting the Avocado's Average Price through the 'Date' column
+
+This also shows there was a huge hike in prices after July 2017 and before Jan 2018.
+Major drop in prices at the end of the year:
+Interesting Pattern enough we see that at the end of the year there is a major price drop in the price of avocados. I wonder why that would be? What possible reason could there be to have a lower price at the end of each year.
+Price fluctuation due to seasons change - in summer, High demand = High price , and in Winters Low Demand = Low Price.
+As large drop in prices,at the same time there is an increasing amount of volume of avocados in the market based on different region.Let's find it out next.
+
+In SanFrancisco when AveragePrice is 3.25$ ,Total number of Avocado sold as 16700.
+After price drop to 3.12$ , soon the Total number of Avocado sold increases up to 19043.
+Analyse the relationship between Prices and Total Volume :-
+Volume of avocados and price of the different types of avocados in each region. We will see the inverse correlation there is between supply and demand and how it affects price. Since we have 54 regions, we will use just a few to make note of this inverse correlation.
+
+When there is an overproduction of avocados they will have a negative impact on the market price of avocados. Let's see if this is the case for both conventional and organic avocados.
+
+AveragePrice showed high (1.73$) in cyan color emplies, less Avacado consumption (0.5M) in market .
+AveragePrice showed low (1.127$) in Pink color emplies , more Avacado consumption (3M) in market.
+Due to less cost of 'Conventional' Avacado likely more in demand in retail market. and its crystal clear more Small Bags
+Sold out for the year 2018 and 2017 because AveragePrice goes down by 0.167 % for year 2018 .
+How average price is distributed over the days of months for Conventional and Organic Types?
+Both tyes of conventional and organic prices increase almost on same scale over the weekends.
+Cool right? now lets have an idea about the relationship between our Features(Correlation)
+Q.8 How dataset features are correlated with each other?
+-1 indicates a perfectly negative linear correlation between two variables.
+
+0 indicates no linear correlation between two variables.
+
+1 indicates a perfectly positive linear correlation between two variables
+
+As we can from the heatmap above, all the Features are not correleted with the Average Price column, instead most of them are correlated with each other. So now I am bit worried because that will not help us get a good model. Lets try and see.
+Outliers checking in our data set
+
+Outliers checking in our data set
+
+#AveragePrice  
+print(avocado_df['AveragePrice'].quantile(0.10))
+print(avocado_df['AveragePrice'].quantile(0.90))
+
+avocado_df["AveragePrice"] = np.where(avocado_df["AveragePrice"] <0.93, 0.93,avocado_df['AveragePrice']) #returns elements chosen from x or y depending on condition.
+avocado_df["AveragePrice"] = np.where(avocado_df["AveragePrice"] >1.9299999999999997, 1.9299999999999997,avocado_df['AveragePrice'])
+
+Feature Selection
+categorical variables can’t fit into a regression equation in raw form.
+
+Most of the algorithms (or ML libraries) produce better result with numerical variable.
+
+First we have to do some Feature Engineering on the categorical Features : region and type
+
+For categorical features, if ordinal, applied ordinal encoder, and for nominal features, used one hot encoder.
+encoded_data =pd.get_dummies(avocado_df.drop(['region'],axis=1),drop_first=True) #This can be done by the **_drop_first_** hyperparameter presend in the `pd.get_dummies()` functions.
+
+Exploratory Data Analysis Inference
+
+With the help of notebook I learnt how EDA can be carried out using Pandas and other plotting libraries.
+
+Also I have seen making use of packages like matplotlib, plotly and seaborn to develop better insights about the data.
+
+I have also seen how preproceesing helps in dealing with missing values and irregualities present in the data. I also learnt how to create new features which will in turn help us to better predict the Target Varaable.
+
+I also make use of pandas profiling feature to generate an html report containing all the information of the various features present in the dataset.
+
+I have seen the impact of columns like type, year/date on the Average price increase/decrease rate.
+
+The most important inference drawn from all this analysis is, I get to know what are the features on which price is highly positively and negatively coorelated with.
+
+Every year, prices of avacados are higher in Second half of year, particularly in the September-October month.Prices are increasing year by year. Prices of avacados are higher in Autumn season.
+
+Most of the Avacados are in the price range 1.0 to 1.5.
+
+HartFord Springfield has highest average price in year 2017. Also, in San Franciso, there was a high rise in prices in year 2016-2017.
+
+Organic Avacados are costlier as compared to Conventional ones. But Conventional ones are high in demand may be due to low prices.
+
+We will continue our Model Building and Evaluation Results in another Notebook.
